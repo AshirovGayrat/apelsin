@@ -1,5 +1,6 @@
 package com.company.entity;
 
+import com.company.enums.ProfileRole;
 import com.company.enums.ProfileStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,10 +14,13 @@ import javax.persistence.*;
 public class ProfileEntity extends BaseEntity{
     private String surname;
     private String name;
+    @Column(unique = true)
     private String phone;
 
     @Enumerated(EnumType.STRING)
     private ProfileStatus status;
+    @Enumerated(EnumType.STRING)
+    private ProfileRole role;
 
     @Column(name = "attach_id")
     private String attachId;

@@ -1,9 +1,6 @@
 package com.company.controller;
 
-import com.company.exp.AppBadRequestException;
-import com.company.exp.AppForbiddenException;
-import com.company.exp.ItemAlreadyExistsException;
-import com.company.exp.ItemNotFoundException;
+import com.company.exp.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -12,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class ExceptionHandlerController {
 
-    @ExceptionHandler({ItemNotFoundException.class,
+    @ExceptionHandler({ItemNotFoundException.class, CategoryAlreadyExistsException.class,
             AppBadRequestException.class, ItemAlreadyExistsException.class})
     public ResponseEntity<?> handleBadRequestException(RuntimeException e) {
         return ResponseEntity.badRequest().body(e.getMessage());

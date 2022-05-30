@@ -2,7 +2,7 @@ package com.company.service;
 
 import com.company.dto.AttachSimpleDTO;
 import com.company.dto.AuthDto;
-import com.company.dto.ProfileDto;
+import com.company.dto.ProfileResponceDto;
 import com.company.dto.RegistrationDto;
 import com.company.entity.AttachEntity;
 import com.company.entity.ProfileEntity;
@@ -30,7 +30,7 @@ public class AuthService {
     @Autowired
     private EmailService emailService;
 
-    public ProfileDto login(AuthDto dto) {
+    public ProfileResponceDto login(AuthDto dto) {
         String pswd = DigestUtils.md5Hex(dto.getPassword());
         Optional<ProfileEntity> optional = profileRepository.
                 findByEmailAndPassword(dto.getEmail(), pswd);
@@ -46,7 +46,7 @@ public class AuthService {
             throw new AppForbiddenException("not access");
         }
 
-        ProfileDto profileDto = new ProfileDto();
+        ProfileResponceDto profileDto = new ProfileResponceDto();
         profileDto.setName(entity.getName());
         profileDto.setSurname(entity.getSurname());
         profileDto.setEmail(entity.getEmail());

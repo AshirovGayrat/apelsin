@@ -1,16 +1,20 @@
 package com.company.service;
 
+import com.company.dto.AttachSimpleDTO;
+import com.company.dto.ChangePswdDTO;
+import com.company.dto.ProfileRequestDTO;
 import com.company.dto.ProfileResponceDto;
-import com.company.dtoRequest.ChangePswdDTO;
-import com.company.dtoRequest.UpdateProfileDTO;
 import com.company.entity.AttachEntity;
 import com.company.entity.ProfileEntity;
+import com.company.enums.ProfileRole;
 import com.company.enums.ProfileStatus;
-import com.company.exp.EmailAlreadyExistsException;
+import com.company.exp.AppBadRequestException;
+import com.company.exp.ItemAlreadyExistsException;
 import com.company.exp.ItemNotFoundException;
 import com.company.repository.ProfileRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,27 +33,23 @@ public class ProfileService {
     @Autowired
     private AttachService attachService;
 
-    public Boolean changePswd(ChangePswdDTO dto){
-        ProfileEntity entity=profileRepository.findByPassword(dto.getPassword()).
-                orElseThrow(()-> new ItemNotFoundException("Profile not found"));
-
-        entity.setPassword(dto.getPassword());
-        return true;
-    }
-
     //Create profile
-    public ProfileResponceDto createProfile(ProfileResponceDto dto) {
+    public ProfileResponceDto createProfile(ProfileRequestDTO dto) {
 
-        Optional<ProfileEntity> optional = profileRepository.findByEmail(dto.getEmail());
+        Optional<ProfileEntity> optional = profileRepository.findByPhone(dto.getPhone());
         if (optional.isPresent()) {
-            log.warn("email alredy exists : {}", dto );
-            throw new EmailAlreadyExistsException("Email Already Exits");
+            log.warn("email alredy exists : {}", dto);
+            throw new ItemAlreadyExistsException("Phone Already Exits");
         }
 
         ProfileEntity entity = toEntity(dto);
-        profileRepository.save(entity);
-        dto.setId(entity.getId());
-        return dto;
+        try {
+            profileRepository.save(entity);
+        }catch (DataIntegrityViolationException e){
+            log.warn("Unique {}", dto);
+            throw new AppBadRequestException("Unique Items!");
+        }
+        return toDTO(entity);
     }
 
     //Get User pagination list
@@ -61,24 +61,24 @@ public class ProfileService {
             list.add(toDTO(entity));
         });
         if (list.isEmpty()) {
-            log.warn(" not found : {}");
+            log.warn(" not found : {}",list);
             throw new ItemNotFoundException("Not Found!");
         }
         return list;
     }
 
     // Get by id
-    public ProfileResponceDto getById(Integer id) {
+    public ProfileResponceDto getById(String id) {
         ProfileEntity entity = profileRepository.findById(id).orElseThrow(() -> new ItemNotFoundException("Not Found!"));
         return toDTO(entity);
     }
 
     // Update profile
-    public ProfileResponceDto updateProfile(Integer id, UpdateProfileDTO dto) {
+    public ProfileResponceDto updateProfile(String id, ProfileRequestDTO dto) {
 
         Optional<ProfileEntity> optional = profileRepository.findById(id);
         if (optional.isEmpty()) {
-            log.warn("Profile not found : {}", dto );
+            log.warn("Profile not found : {}", dto);
             throw new ItemNotFoundException("Profile not found!");
         }
 
@@ -92,38 +92,34 @@ public class ProfileService {
     }
 
     //delete profile
-    public Boolean delete(Integer id) {
-        ProfileEntity entity = profileRepository.findById(id).orElseThrow(() -> new ItemNotFoundException("Not Found!"));
-
-        if (entity==null) {
-            log.warn("id not found : {}", id );
-            throw new ItemNotFoundException("Not Found!");
+    public Boolean delete(String id) {
+        ProfileEntity entity = get(id);
+        if (entity.getVisible()) {
+            return 0 < profileRepository.updateVisible(false, id);
         }
-
-        int n = profileRepository.updateStatus(ProfileStatus.DELETED, id);
-        return n > 0;
+        return true;
     }
 
     // Update profile photo
-    public Boolean updateImage(MultipartFile file, Integer pId) {
+    public Boolean updateImage(MultipartFile file, String pId) {
         ProfileEntity profileEntity = get(pId);
 
-        AttachEntity attachEntity=new AttachEntity();
+        AttachEntity attachEntity = new AttachEntity();
 
         if (profileEntity.getAttach() != null) {
-            attachEntity=attachService.updateAttach(file,profileEntity.getAttach().getId());
+            attachEntity = attachService.updateAttach(file, profileEntity.getAttach().getId());
         } else if (profileEntity.getAttach() == null) {
-            attachEntity=attachService.reUploadAttach(file);
+            attachEntity = attachService.reUploadAttach(file);
         }
         profileEntity.setAttach(attachEntity);
 
         return true;
     }
 
-    public Boolean deleteImage(Integer pId) {
+    public Boolean deleteImage(String pId) {
         ProfileEntity profileEntity = get(pId);
 
-        if (attachService.delete(profileEntity.getAttach().getId())){
+        if (attachService.delete(profileEntity.getAttach().getId())) {
             profileEntity.setAttach(null);
             return true;
         }
@@ -135,29 +131,29 @@ public class ProfileService {
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setSurname(entity.getSurname());
-        dto.setEmail(entity.getEmail());
-        dto.setPassword(entity.getPassword());
-        dto.setUpdateDate(entity.getUpdateDate());
-        dto.setCreateDate(entity.getCreatedDate());
-        if (entity.getAttach()!=null){
-            dto.getAttachDto().setAttachId(entity.getAttachId());
-            dto.getAttachDto().setUrl(attachService.toOpenURL(entity.getAttachId()));
+        dto.setPhone(entity.getPhone());
+        dto.setCreatedDate(entity.getCreatedDate());
+        if (entity.getAttachId() != null) {
+            AttachSimpleDTO attachDTO = new AttachSimpleDTO();
+            attachDTO.setAttachId(entity.getAttachId());
+            attachDTO.setUrl(attachService.toOpenURL(entity.getAttachId()));
+            dto.setAttachDto(attachDTO);
         }
         return dto;
     }
 
-    public ProfileEntity get(Integer id) {
-        return profileRepository.findById(id).orElseThrow(() -> new ItemNotFoundException("Not Found!"));
+    public ProfileEntity get(String id) {
+        return profileRepository.findById(id).orElseThrow(() ->
+                new ItemNotFoundException("Profile Not Found!"));
     }
 
-    public ProfileEntity toEntity(ProfileResponceDto dto){
+    public ProfileEntity toEntity(ProfileRequestDTO dto) {
         ProfileEntity entity = new ProfileEntity();
         entity.setName(dto.getName());
         entity.setSurname(dto.getSurname());
-        entity.setEmail(dto.getEmail());
-        entity.setPassword(dto.getPassword());
-        entity.setRole(dto.getRole());
-        entity.setStatus(ProfileStatus.NOT_CONFIRMED);
+        entity.setPhone(dto.getPhone());
+        entity.setRole(ProfileRole.ADMIN);
+        entity.setStatus(ProfileStatus.ACTIVE);
         return entity;
     }
 }

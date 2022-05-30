@@ -25,7 +25,6 @@ public class AttachEntity {
     private String origenName;
     @Column()
     private Long size;
-    @Enumerated(EnumType.STRING)
 
     @Column
     private LocalDateTime createdDate = LocalDateTime.now();
