@@ -1,5 +1,6 @@
 package com.company.entity;
 
+import com.company.enums.SmsStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +11,8 @@ import javax.persistence.Table;
 @Setter
 @Entity
 @Table(name = "sms_table")
-public class SmsEntity extends BaseEntity{
+public class SmsEntity extends BaseEntity {
     private String phone;
-    private int sms;
+    private String content;
+    private SmsStatus status;
 }

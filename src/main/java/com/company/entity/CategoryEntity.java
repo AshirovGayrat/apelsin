@@ -7,20 +7,17 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-@Setter
 @Getter
+@Setter
 @Entity
-@Table(name = "category")
-public class CategoryEntity extends BaseEntity{
-
-    @Column(name = "name_uz",nullable = false, unique = true)
+@Table(name = "Category")
+public class CategoryEntity extends BaseEntity {
+    @Column(name = "name_uz")
     private String nameUz;
-    @Column(name = "name_ru",nullable = false, unique = true)
+    @Column(name = "name_ru")
     private String nameRu;
-    @Column(name = "name_en",nullable = false, unique = true)
+    @Column(name = "name_en")
     private String nameEn;
-
+    @Column
     private String key;
-
-    private Boolean visible;
 }

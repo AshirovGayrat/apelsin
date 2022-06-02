@@ -1,73 +1,67 @@
 package com.company.controller;
 
-import com.company.dto.ChangePswdDTO;
-import com.company.dto.ProfileRequestDTO;
+import com.company.dto.request.ProfileChangeStatusRequestDTO;
+import com.company.dto.request.ProfileRequestDTO;
+import com.company.enums.ProfileRole;
 import com.company.service.ProfileService;
+import com.company.util.JwtUtil;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.convert.ReadingConverter;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @Slf4j
+@Api(tags = "Profile")
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("/profile")
+@RequestMapping("/v1/profile")
 public class ProfileController {
-    @Autowired
-    private ProfileService profileService;
+    private final ProfileService profileService;
 
-    @ApiOperation(value = "create", notes = "Method for create profile", nickname = "Mazgi")
-    @PostMapping("/adm")
-    public ResponseEntity<?> createProfile(@RequestBody ProfileRequestDTO dto) {
-        return ResponseEntity.ok(profileService.createProfile(dto));
+    @ApiOperation(value = "Create ", notes = "Method: Create Profile")
+    @PostMapping("")
+    public ResponseEntity<?> create(@RequestBody @Valid ProfileRequestDTO requestDTO, HttpServletRequest request) {
+        log.info("Create: {}", requestDTO);
+        JwtUtil.getIdFromHeader(request);
+        return ResponseEntity.ok(profileService.create(requestDTO));
     }
 
-    @ApiOperation(value = "update", notes = "Method for update profile", nickname = "Mazgi")
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateProfile( @PathVariable("id")String id,
-                                            @RequestBody @Valid ProfileRequestDTO dto) {
-        log.info("update profile: {}", "id: " + id + " " + dto);
-        return ResponseEntity.ok(profileService.updateProfile(id, dto));
-    }
-
-    @ApiOperation(value = "update", notes = "Method for update profile Image", nickname = "Mazgi")
-    @PutMapping("/{file}")
-    public ResponseEntity<?> updateImage(@RequestParam MultipartFile file,
-                                         @RequestParam("pid") String pid) {
-        log.info("update profile: {}", "pid: " + pid);
-        try {
-            return ResponseEntity.ok(profileService.updateImage(file, pid));
-        } catch (DataIntegrityViolationException e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Attach not found");
-        }
-    }
-
-    @DeleteMapping("/{pid}")
-    public ResponseEntity<?> deleteImage(@PathVariable("pid")String pid) {
-        return ResponseEntity.ok(profileService.deleteImage(pid));
-    }
-
-
-    // ADMIN
-    @DeleteMapping("/adm/{id}")
-    public ResponseEntity<?> deleteProfile(@PathVariable("id") String id) {
-        return ResponseEntity.ok(profileService.delete(id));
-    }
-
-    @GetMapping("")
-    public ResponseEntity<?> getPaginationList(@RequestParam(value = "page", defaultValue = "0") int page,
-                                               @RequestParam(value = "size", defaultValue = "3") int size) {
-        return ResponseEntity.ok(profileService.paginationList(page, size));
-    }
-
+    @ApiOperation(value = "Get by id", notes = "Method: by Profile id")
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable("id") String id) {
+        log.info("Get by id: {}", id);
         return ResponseEntity.ok(profileService.getById(id));
     }
 
+    @ApiOperation(value = "Get all", notes = "Method: Profile get all")
+    @GetMapping("")
+    public ResponseEntity<?> getAll() {
+        log.info("Get all: {}");
+        return ResponseEntity.ok(profileService.getAll());
+    }
+
+    @ApiOperation(value = "Delete by id", notes = "Method: Delete by Profile id")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") String id, HttpServletRequest request) {
+        log.info("Delete by id: {}", id);
+        JwtUtil.getIdFromHeader(request);
+        return ResponseEntity.ok(profileService.delete(id));
+    }
+
+    @ApiOperation(value = "Change Status", notes = "Method: by Profile id")
+    @PutMapping("/{id}")
+    public ResponseEntity<?> changeStatus(@PathVariable("id") String id,
+                                          @RequestBody ProfileChangeStatusRequestDTO requestDTO,
+                                          HttpServletRequest request) {
+        log.info("Change status by id: {},{}", requestDTO, id);
+        JwtUtil.getIdFromHeader(request, ProfileRole.ADMIN);
+        return ResponseEntity.ok(profileService.changeStatus(id, requestDTO));
+    }
 }

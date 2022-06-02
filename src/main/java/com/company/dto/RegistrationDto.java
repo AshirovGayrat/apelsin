@@ -21,6 +21,10 @@ public class RegistrationDto {
     private String surname;
     @NotNull
     @NotBlank(message = "phone required")
-    @Size(min = 13, max = 13, message = "phone requaired")
+    @Size(min = 12, max = 12, message = "phone requaired")
     private String phone;
+
+    @NotNull
+    @Size(min = 3, max = 25, message = "password requaried")
+    private String password;
 }

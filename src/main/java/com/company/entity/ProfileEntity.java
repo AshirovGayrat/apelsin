@@ -10,23 +10,26 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "profile_table")
-public class ProfileEntity extends BaseEntity{
-    private String surname;
+@Table(name = "profile")
+public class ProfileEntity extends BaseEntity {
+    @Column
     private String name;
-    @Column(unique = true)
+    @Column
+    private String surname;
+    @Column
     private String phone;
-
+    @Column
     @Enumerated(EnumType.STRING)
     private ProfileStatus status;
+    @Column
     @Enumerated(EnumType.STRING)
     private ProfileRole role;
+    @Column
+    private String password;
 
     @Column(name = "attach_id")
     private String attachId;
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attach_id", insertable = false, updatable = false)
     private AttachEntity attach;
-
-    private Boolean visible=true;
 }

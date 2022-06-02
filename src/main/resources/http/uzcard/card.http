@@ -1,0 +1,55 @@
+POST http://167.172.66.39:9091/card/bank/create
+Content-Type: application/json
+Authorization: Basic bank bankjon
+
+{
+  "number" : 8603,
+  "expiredDate" : 2,
+  "phone" : "+998904091471",
+  "status" : "ACTIVE",
+  "client" : "8a8a82a9810506c201810507b2990001",
+  "profile_name" : "profile"
+}
+
+###
+PUT http://localhost:8080/card/bank/status/8a8a812080ff1c110180ff1c1b570000
+Content-Type: application/json
+Authorization: Basic bank bankjon
+
+{
+  "number" : 1200,
+  "expiredDate" : 2,
+  "phone" : "+998904091479",
+  "status" : "ACTIVE",
+  "client" : "8a8a812080fee85c0180fee8f0090000",
+  "profile_name" : "profile"
+}
+
+###
+PUT http://localhost:8080/card/bank/phone/8a8a812080ff1c110180ff1c1b570000
+Content-Type: application/json
+Authorization: Basic bank bankjon
+
+{
+  "phone" : "+998904091479"
+}
+
+###
+GET http://localhost:8080/card/any/List/phone/+998904091479
+Authorization: Basic bank bankjon
+
+###
+GET http://167.172.66.39:9091/v1/card/any/List/clientId/8a8a812080fee85c0180fee8f0090000
+
+###
+GET http://167.172.66.39:9091/v1/card/getByCardNumber/8600-4081-1629-7459
+Authorization: Basic bank bankjon
+
+###
+POST http://167.172.66.39:9091/v1/card/filter
+Authorization: Basic bank bankjon
+Content-Type: application/json
+
+{
+  "status": "ACTIVE"
+}

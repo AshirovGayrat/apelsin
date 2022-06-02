@@ -1,0 +1,42 @@
+### create
+POST http://localhost:8080/v1/transactions
+Content-Type: application/json
+Authorization: Basic bank bankjon
+
+{
+  "amount": 30,
+  "fromCardId": "8a8a828480ff35210180ff354c820000",
+  "toCardId": "8a8a81d68103ec11018103ecc7550001"
+}
+
+### getCardId
+GET http://localhost:8080/v1/transactions/cardId/8a8a81d68103ec11018103ecc7550001
+Authorization: Basic bank bankjon
+
+###
+GET http://localhost:8080/v1/transactions/clientId/8a8a828480fef62d0180fef9bafc0000
+Authorization: Basic bank bankjon
+
+###
+GET http://localhost:8080/v1/transactions/profileName/bank
+Authorization: Basic bank bankjon
+
+###
+GET http://localhost:8080/v1/transactions/phone/+998990001122
+Authorization: Basic bank bankjon
+
+###
+POST http://localhost:8080/v1/transactions/filter
+Content-Type: application/json
+Authorization: Basic bank bankjon
+
+{
+  "fromDate": "2022-05-26",
+  "status": "ACTIVE"
+}
+
+###
+//  "id": "string",
+//  "profileName": "",
+//  "toAmount": "",
+//  "toDate": ""

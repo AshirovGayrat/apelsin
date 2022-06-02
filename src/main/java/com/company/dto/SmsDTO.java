@@ -10,9 +10,9 @@ import javax.validation.constraints.Size;
 @Setter
 public class SmsDTO {
     @NotNull
-    @Size(min = 13, max = 13)
+    @Size(min = 12, max = 12)
     private String phone;
     @NotNull
-    @Size(min = 6, max = 6)
-    private int sms;
+    @Size(min = 5, max = 5)
+    private String sms;
 }

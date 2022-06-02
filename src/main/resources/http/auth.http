@@ -1,0 +1,18 @@
+###
+POST http://localhost:9091/auth/registration
+Content-Type: application/json
+
+{
+  "name": "Ali",
+  "surname": "Ali1=yev",
+  "phone": "998915721213"
+}
+
+###
+POST http://localhost:9091/auth/activation
+Content-Type: application/json
+
+{
+  "phone": "998915721213",
+  "sms": "22441"
+}

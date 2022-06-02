@@ -1,159 +1,106 @@
 package com.company.service;
 
 import com.company.dto.AttachSimpleDTO;
-import com.company.dto.ChangePswdDTO;
-import com.company.dto.ProfileRequestDTO;
-import com.company.dto.ProfileResponceDto;
-import com.company.entity.AttachEntity;
+import com.company.dto.request.ProfileChangeStatusRequestDTO;
+import com.company.dto.request.ProfileRequestDTO;
+import com.company.dto.response.ProfileResponseDTO;
 import com.company.entity.ProfileEntity;
 import com.company.enums.ProfileRole;
 import com.company.enums.ProfileStatus;
-import com.company.exp.AppBadRequestException;
-import com.company.exp.ItemAlreadyExistsException;
-import com.company.exp.ItemNotFoundException;
+import com.company.exception.AppBadRequestException;
+import com.company.exception.ItemAlreadyExistsException;
+import com.company.exception.ItemNotFoundException;
 import com.company.repository.ProfileRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ProfileService {
-    @Autowired
-    private ProfileRepository profileRepository;
-    @Autowired
-    private AttachService attachService;
+    private final ProfileRepository profileRepository;
+    private final AttachService attachService;
 
-    //Create profile
-    public ProfileResponceDto createProfile(ProfileRequestDTO dto) {
 
-        Optional<ProfileEntity> optional = profileRepository.findByPhone(dto.getPhone());
+    public ProfileResponseDTO create(ProfileRequestDTO requestDTO) {
+        Optional<ProfileEntity> optional = profileRepository.findByPhone(requestDTO.getPhone());
         if (optional.isPresent()) {
-            log.warn("email alredy exists : {}", dto);
-            throw new ItemAlreadyExistsException("Phone Already Exits");
+            log.warn("Phone already axists : {}", requestDTO);
+            throw new ItemAlreadyExistsException("Phone already exists!");
         }
 
-        ProfileEntity entity = toEntity(dto);
+        ProfileEntity entity = new ProfileEntity();
+        entity.setName(requestDTO.getName());
+        entity.setSurname(requestDTO.getSurname());
+        entity.setPhone(requestDTO.getPhone());
+        entity.setStatus(ProfileStatus.ACTIVE);
+        entity.setRole(ProfileRole.USER);
+
+        if (requestDTO.getAttachId() != null) {
+            entity.setAttachId(requestDTO.getAttachId());
+        }
+
         try {
             profileRepository.save(entity);
-        }catch (DataIntegrityViolationException e){
-            log.warn("Unique {}", dto);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Unique {}", requestDTO);
             throw new AppBadRequestException("Unique Items!");
         }
+
         return toDTO(entity);
     }
 
-    //Get User pagination list
-    public List<ProfileResponceDto> paginationList(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
-
-        List<ProfileResponceDto> list = new ArrayList<>();
-        profileRepository.findAll(pageable).forEach(entity -> {
-            list.add(toDTO(entity));
+    public ProfileResponseDTO getById(String id) {
+        ProfileEntity entity = profileRepository.findByIdAndVisible(id, true).orElseThrow(() -> {
+            log.warn("Profile id not found");
+            throw new ItemNotFoundException("Profile id not found");
         });
-        if (list.isEmpty()) {
-            log.warn(" not found : {}",list);
-            throw new ItemNotFoundException("Not Found!");
-        }
-        return list;
-    }
-
-    // Get by id
-    public ProfileResponceDto getById(String id) {
-        ProfileEntity entity = profileRepository.findById(id).orElseThrow(() -> new ItemNotFoundException("Not Found!"));
         return toDTO(entity);
     }
 
-    // Update profile
-    public ProfileResponceDto updateProfile(String id, ProfileRequestDTO dto) {
-
-        Optional<ProfileEntity> optional = profileRepository.findById(id);
-        if (optional.isEmpty()) {
-            log.warn("Profile not found : {}", dto);
-            throw new ItemNotFoundException("Profile not found!");
-        }
-
-        ProfileEntity entity = optional.get();
-
-        entity.setName(dto.getName());
-        entity.setSurname(dto.getSurname());
-        profileRepository.save(entity);
-
-        return toDTO(entity);
+    public List<ProfileResponseDTO> getAll() {
+        List<ProfileResponseDTO> profileList = new LinkedList<>();
+        profileRepository.findAllByVisible(true).forEach(entity -> {
+            profileList.add(toDTO(entity));
+        });
+        return profileList;
     }
 
-    //delete profile
     public Boolean delete(String id) {
-        ProfileEntity entity = get(id);
-        if (entity.getVisible()) {
-            return 0 < profileRepository.updateVisible(false, id);
-        }
-        return true;
+        int n = profileRepository.deleteStatus(false, id);
+        return n > 0;
     }
 
-    // Update profile photo
-    public Boolean updateImage(MultipartFile file, String pId) {
-        ProfileEntity profileEntity = get(pId);
-
-        AttachEntity attachEntity = new AttachEntity();
-
-        if (profileEntity.getAttach() != null) {
-            attachEntity = attachService.updateAttach(file, profileEntity.getAttach().getId());
-        } else if (profileEntity.getAttach() == null) {
-            attachEntity = attachService.reUploadAttach(file);
-        }
-        profileEntity.setAttach(attachEntity);
-
-        return true;
+    public Boolean changeStatus(String id, ProfileChangeStatusRequestDTO requestDTO) {
+        int n = profileRepository.changeStatus(requestDTO.getStatus(), id);
+        return n > 0;
     }
 
-    public Boolean deleteImage(String pId) {
-        ProfileEntity profileEntity = get(pId);
-
-        if (attachService.delete(profileEntity.getAttach().getId())) {
-            profileEntity.setAttach(null);
-            return true;
-        }
-        return false;
-    }
-
-    private ProfileResponceDto toDTO(ProfileEntity entity) {
-        ProfileResponceDto dto = new ProfileResponceDto();
-        dto.setId(entity.getId());
-        dto.setName(entity.getName());
-        dto.setSurname(entity.getSurname());
-        dto.setPhone(entity.getPhone());
-        dto.setCreatedDate(entity.getCreatedDate());
+    private ProfileResponseDTO toDTO(ProfileEntity entity) {
+        ProfileResponseDTO responseDTO = new ProfileResponseDTO();
+        responseDTO.setId(entity.getId());
+        responseDTO.setStatus(entity.getStatus());
+        responseDTO.setName(entity.getName());
+        responseDTO.setSurname(entity.getSurname());
+        responseDTO.setPhone(entity.getPhone());
+        responseDTO.setCreatedDate(entity.getCreatedDate());
         if (entity.getAttachId() != null) {
-            AttachSimpleDTO attachDTO = new AttachSimpleDTO();
-            attachDTO.setAttachId(entity.getAttachId());
-            attachDTO.setUrl(attachService.toOpenURL(entity.getAttachId()));
-            dto.setAttachDto(attachDTO);
+            AttachSimpleDTO attach=new AttachSimpleDTO();
+            attach.setId(entity.getAttachId());
+            attach.setToOpenUrl(attachService.toOpenUrl(entity.getAttachId()));
+            responseDTO.setAttach(attach);
         }
-        return dto;
+        return responseDTO;
     }
 
-    public ProfileEntity get(String id) {
-        return profileRepository.findById(id).orElseThrow(() ->
-                new ItemNotFoundException("Profile Not Found!"));
-    }
-
-    public ProfileEntity toEntity(ProfileRequestDTO dto) {
-        ProfileEntity entity = new ProfileEntity();
-        entity.setName(dto.getName());
-        entity.setSurname(dto.getSurname());
-        entity.setPhone(dto.getPhone());
-        entity.setRole(ProfileRole.ADMIN);
-        entity.setStatus(ProfileStatus.ACTIVE);
-        return entity;
+    public ProfileEntity getByPhone(String phone) {
+        return profileRepository.findByPhone(phone)
+                .orElseThrow(() -> new ItemNotFoundException("Not Found!"));
     }
 }

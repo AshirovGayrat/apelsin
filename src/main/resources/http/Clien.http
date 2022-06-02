@@ -1,0 +1,65 @@
+### create
+POST http://localhost:8080/v1/client
+Authorization: Basic bank bankjon
+Content-Type: application/json
+
+{
+  "name": "Val",
+  "surname": "Valov",
+  "middleName": "Valvich",
+  "phone": "+998999632355"
+}
+### create
+POST http://167.172.66.39:9091/v1/client
+Authorization: Basic bank bankjon
+Content-Type: application/json
+
+{
+  "name": "Val",
+  "surname": "Valov",
+  "middleName": "Valvich",
+  "phone": "+998999632355"
+}
+
+### get by id
+GET http://localhost:8080/v1/client/8a8a828480fef62d0180fef9bafc0000
+Authorization: Basic admin adminjon
+
+###
+GET http://localhost:8080/v1/client/pagination
+Authorization: Basic admin adminjon
+###
+GET http://167.172.66.39:9091/v1/client/pagination
+Authorization: Basic admin adminjon
+
+###
+PUT http://localhost:8080/v1/client/changePhone/8a8a828480fef62d0180fef9bafc0000
+Authorization: Basic bank bankjon
+Content-Type: application/json
+
+{
+  "phone": "+998990001122"
+}
+
+###
+PUT http://localhost:8080/v1/client/update/8a8a828480fef62d0180fef9bafc0000
+Authorization: Basic bank bankjon
+Content-Type: application/json
+
+{
+  "name": "Eshmat",
+  "surname": "Eshmatov",
+  "middleName": "Eshmatvich"
+}
+
+###
+PUT http://localhost:8080/v1/client/changeStatus/8a8a828480fef62d0180fef9bafc0000/Active
+Authorization: Basic bank bankjon
+
+###
+PUT http://localhost:8080/v1/client/changeStatus/8a8a828480fef62d0180fef9bafc0000/block
+Authorization: Basic bank bankjon
+
+###
+PUT http://localhost:8080/v1/client/changeStatus/8a8a828480fef62d0180fef9bafc0000/notactive
+Authorization: Basic bank bankjon

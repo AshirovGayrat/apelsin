@@ -1,0 +1,57 @@
+POST http://167.172.66.39:9091/v1/client/create
+Content-Type: application/json
+Authorization: Basic bank bankjon
+
+{
+  "name" : "Vali",
+  "surname" : "Valiyev",
+  "middleName" : "VAliyevich",
+  "phone" : "+998904091470",
+  "status" : "ACTIVE",
+  "profileName" : "profile"
+}
+
+###
+PUT http://localhost:8080/client/+998904091478
+Content-Type: application/json
+Authorization: Basic bank bankjon
+
+{
+  "name" : "Ali",
+  "surname" : "Aliyev",
+  "middleName" : "Aliyevich",
+  "status" : "ACTIVE"
+}
+
+###
+PUT http://localhost:8080/client/status/+998904091478
+Content-Type: application/json
+Authorization: Basic bank bankjon
+
+{
+  "status" : "ACTIVE"
+}
+
+###
+PUT http://localhost:8080/client/phone/+998904091479
+Content-Type: application/json
+Authorization: Basic bank bankjon
+
+{
+  "phone" : "+998904091478"
+}
+
+###
+GET http://localhost:8080/client/list
+Authorization: Basic admin adminjon
+
+###
+GET http://localhost:8080/client/+998904091478
+Authorization: Basic bank bankjon
+
+###
+GET http://167.172.66.39:9091/v1/client/profile/list
+
+### GET ALL
+GET http://167.172.66.39:9091/v1/client/pagination
+Authorization: Basic admin adminjon

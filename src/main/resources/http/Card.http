@@ -1,0 +1,61 @@
+### create
+POST http://localhost:9091/v1/card
+Content-Type: application/json
+
+{
+  "balance": 500,
+  "clientId":"8a8a81d68103ec11018103ec4be90000"
+}
+
+### getBy
+GET http://localhost:8080/v1/card/8a8a81d68103ec11018103ecc7550001
+
+### getByCardNumber
+GET http://localhost:8080/v1/card/getByCardNumber/8600-8905-6521-4797
+
+### getByClientId
+GET http://localhost:8080/v1/card/getByClientId/8a8a828480fef62d0180fef9bafc0000
+
+### getByPhoneId
+GET http://localhost:8080/v1/card/getByPhoneId/{{id}}
+
+### getBalance
+GET http://localhost:8080/v1/card/getBalance/8600-8905-6521-4797
+
+### chengStatus
+PUT http://localhost:8080/v/card/chengStatus/8a8a828480ff35210180ff354c820000/Active
+Authorization: Basic bank bankjon
+
+### assignPhone
+PUT http://localhost:8080/v1/card/assignPhone/
+Authorization: Basic bank bankjon
+Content-Type: application/json
+
+{
+  "phone": "+998330030528"
+}
+
+
+### chengStatus
+PUT http://localhost:8080/card/bank/chengStatus/8a8a828480ff35210180ff354c820000/block
+Authorization: Basic bank bankjon
+
+### chengStatus
+PUT http://localhost:8080/card/bank/chengStatus/8a8a828480ff35210180ff354c820000/notactive
+Authorization: Basic bank bankjon
+
+### filter
+POST http://localhost:8080/v1/card/filter
+Authorization: Basic bank bankjon
+Content-Type: application/json
+
+{
+  "cardId": "string",
+  "cardNumber": "string",
+  "client_id": "string",
+  "createdDate": "2022-05-30T04:08:26.942Z",
+  "fromBalance": 0,
+  "profileName": "string",
+  "status": "ACTIVE",
+  "toBalance": 0
+}
